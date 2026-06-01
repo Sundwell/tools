@@ -1,8 +1,17 @@
-export default defineEventHandler(async () => {
-  const now = new Date()
-  // Previous month
-  const year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()
-  const month = now.getMonth() === 0 ? 12 : now.getMonth() // 1-indexed
+export default defineEventHandler(async (event) => {
+  const query = getQuery(event)
+  const monthParam = query.month as string | undefined // YYYY-MM
+
+  let year: number, month: number
+  if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
+    const [y, m] = monthParam.split('-').map(Number)
+    year = y
+    month = m // 1-indexed
+  } else {
+    const now = new Date()
+    year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()
+    month = now.getMonth() === 0 ? 12 : now.getMonth() // 1-indexed
+  }
 
   const firstDay = new Date(year, month - 1, 1)
   const lastDay = new Date(year, month, 0)
@@ -25,6 +34,7 @@ export default defineEventHandler(async () => {
 
   return {
     totalHours: weekdays * 8,
+    weekdays,
     periodStart: fmt(firstDay),
     periodEnd: fmt(lastDay),
   }
