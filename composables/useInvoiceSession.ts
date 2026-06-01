@@ -30,7 +30,7 @@ export function useInvoiceSession() {
   // PA fields
   const paInvoiceNumber = ref('')
   const paInvoiceDate = ref(todayDDMMYYYY())
-  const paHours = ref(0)
+  const _paHours = ref(0)
   const paRate = ref(28)
   const paStatus = ref<InvoiceStatus>('idle')
   const paError = ref('')
@@ -42,7 +42,15 @@ export function useInvoiceSession() {
   const omStatus = ref<InvoiceStatus>('idle')
   const omError = ref('')
 
-  const omHours = computed(() => Math.max(0, totalHours.value - paHours.value))
+  // Editing either side keeps them summing to totalHours
+  const paHours = computed({
+    get: () => _paHours.value,
+    set: (v: number) => { _paHours.value = Math.max(0, Math.min(v, totalHours.value)) },
+  })
+  const omHours = computed({
+    get: () => Math.max(0, totalHours.value - _paHours.value),
+    set: (v: number) => { _paHours.value = Math.max(0, totalHours.value - Math.max(0, Math.min(v, totalHours.value))) },
+  })
 
   const paLineAmount = computed(() => paHours.value * paRate.value)
   const paBalanceDue = computed(() => paLineAmount.value)
@@ -66,7 +74,7 @@ export function useInvoiceSession() {
     weekdays.value = defaults.weekdays
     periodStart.value = defaults.periodStart
     periodEnd.value = defaults.periodEnd
-    paHours.value = defaults.totalHours
+    _paHours.value = defaults.totalHours
 
     paInvoiceNumber.value = nextNum.nextNumber
     const numMatch = nextNum.nextNumber.match(/(\d+)$/)
@@ -85,7 +93,7 @@ export function useInvoiceSession() {
     weekdays.value = defaults.weekdays
     periodStart.value = defaults.periodStart
     periodEnd.value = defaults.periodEnd
-    paHours.value = defaults.totalHours
+    _paHours.value = defaults.totalHours
   }
 
   async function generatePA(): Promise<{ id: string; downloadUrl: string; filename: string }> {

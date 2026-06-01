@@ -22,21 +22,17 @@
           </SelectContent>
         </Select>
       </div>
-      <span v-if="monthLabel" class="text-sm text-muted-foreground">
-        {{ monthLabel }} · {{ weekdays }} weekdays · {{ totalHours }} hrs
+      <span v-if="weekdays" class="text-sm text-muted-foreground">
+        {{ weekdays }} weekdays · {{ totalHours }} hrs
       </span>
     </div>
 
-    <!-- Shared billing period -->
+    <!-- Shared billing period (read-only, driven by month selector) -->
     <div class="mb-6 max-w-xs">
       <label class="block text-xs font-medium text-muted-foreground mb-1">Billing Period</label>
-      <RangePicker
-        :start="periodStart"
-        :end="periodEnd"
-        :disabled="paStatus === 'done' || omStatus === 'done'"
-        @update:start="periodStart = $event"
-        @update:end="periodEnd = $event"
-      />
+      <div class="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+        {{ periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : '—' }}
+      </div>
     </div>
 
     <!-- Two-column grid -->
@@ -138,11 +134,14 @@
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-medium text-muted-foreground mb-1">Hours <span class="text-xs opacity-60">(total − PA)</span></label>
+            <label class="block text-xs font-medium text-muted-foreground mb-1">Hours</label>
             <input
-              :value="omHours"
-              readonly
-              class="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground"
+              v-model.number="omHours"
+              type="number"
+              step="0.5"
+              min="0"
+              :disabled="omStatus === 'done'"
+              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
             />
           </div>
           <div>
