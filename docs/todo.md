@@ -1,5 +1,17 @@
 # TODO
 
+## Invoice configuration page
+
+Separate settings page (`/invoice/settings` or `/settings`) for global invoice tool config:
+
+- **Rate** — default hourly rate (currently hardcoded at €28/hr)
+- **Omni Matrix email config** — "To" and "CC" addresses for OM invoice sending
+- **Payoro email config** — "To" and "CC" addresses for PA invoice sending
+
+Settings stored in DB (new `settings` table or key-value store). Used by the send endpoint and pre-filled into the generate form.
+
+---
+
 ## Custom line items / extra rows
 
 Allow adding extra rows to an invoice beyond the main work hours row.
