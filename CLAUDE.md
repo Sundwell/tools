@@ -4,7 +4,7 @@ Personal toolbox platform. Invoice generator is the first tool. Future tools liv
 
 ## Stack
 
-Nuxt.js 3 (full-stack) · Vue 3 · Tailwind CSS · Drizzle ORM · SQLite (`data/db.sqlite`) · docxtemplater · LibreOffice headless PDF
+Nuxt.js 4 (4.4.6, full-stack) · Vue 3 · Tailwind CSS v4 · Drizzle ORM · SQLite (`data/db.sqlite`) · docxtemplater · LibreOffice headless PDF
 
 ## Running
 
