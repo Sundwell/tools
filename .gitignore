@@ -4,3 +4,6 @@ data/
 .output/
 dist/
 *.log
+.omc/
+.claude/
+*:Zone.Identifier
