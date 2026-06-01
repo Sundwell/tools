@@ -7,3 +7,4 @@ dist/
 .omc/
 .claude/
 *:Zone.Identifier
+.history/
