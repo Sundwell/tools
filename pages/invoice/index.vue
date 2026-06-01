@@ -1,216 +1,225 @@
 <template>
-  <div class="max-w-2xl mx-auto py-10 px-4">
+  <div class="max-w-[1200px] mx-auto py-10 px-4">
     <!-- Nav -->
     <div class="flex items-center justify-between mb-6">
-      <NuxtLink to="/" class="text-sm text-blue-600 hover:underline">&larr; Back to Tools</NuxtLink>
-      <NuxtLink to="/invoice/history" class="text-sm text-blue-600 hover:underline">Invoice History &rarr;</NuxtLink>
+      <NuxtLink to="/" class="text-sm text-muted-foreground hover:text-foreground">&larr; Back to Tools</NuxtLink>
+      <NuxtLink to="/invoice/history" class="text-sm text-muted-foreground hover:text-foreground">Invoice History &rarr;</NuxtLink>
     </div>
 
-    <h1 class="text-2xl font-bold text-gray-900 mb-1">New Monthly Invoices</h1>
-    <p class="text-gray-500 mb-8">{{ monthLabel || 'Loading...' }}</p>
+    <h1 class="text-2xl font-bold text-foreground mb-6">New Monthly Invoices</h1>
 
-    <!-- Step indicator -->
-    <div class="flex items-center gap-3 mb-8">
-      <div
-        v-for="(label, i) in ['PA Invoice', 'OM Invoice']"
-        :key="i"
-        class="flex items-center gap-2"
-      >
-        <div
-          :class="[
-            'w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold',
-            step === i + 1
-              ? 'bg-blue-600 text-white'
-              : step > i + 1
-              ? 'bg-green-500 text-white'
-              : 'bg-gray-200 text-gray-500',
-          ]"
-        >
-          {{ step > i + 1 ? '✓' : i + 1 }}
-        </div>
-        <span :class="step === i + 1 ? 'text-gray-900 font-medium' : 'text-gray-400'" class="text-sm">
-          {{ label }}
-        </span>
-        <span v-if="i < 1" class="text-gray-300 mx-1">→</span>
+    <!-- Month selector + stats -->
+    <div class="flex flex-wrap items-center gap-4 mb-4">
+      <div class="w-52">
+        <Select :model-value="selectedMonth" @update:model-value="loadMonth">
+          <SelectTrigger>
+            <SelectValue placeholder="Select month" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="opt in monthOptions" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
+      <span v-if="monthLabel" class="text-sm text-muted-foreground">
+        {{ monthLabel }} · {{ weekdays }} weekdays · {{ totalHours }} hrs
+      </span>
     </div>
 
-    <!-- Done state -->
-    <div v-if="done" class="bg-green-50 border border-green-200 rounded-xl p-8 text-center">
-      <div class="text-4xl mb-4">✓</div>
-      <h2 class="text-xl font-semibold text-green-800 mb-2">Both invoices generated!</h2>
-      <p class="text-green-600 mb-6">PA and OM invoices have been downloaded.</p>
-      <div class="flex gap-3 justify-center">
-        <NuxtLink to="/invoice/history" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
-          View History
-        </NuxtLink>
-        <button @click="restart" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-          New Month
-        </button>
-      </div>
+    <!-- Shared billing period -->
+    <div class="mb-6 max-w-xs">
+      <label class="block text-xs font-medium text-muted-foreground mb-1">Billing Period</label>
+      <RangePicker
+        :start="periodStart"
+        :end="periodEnd"
+        :disabled="paStatus === 'done' || omStatus === 'done'"
+        @update:start="periodStart = $event"
+        @update:end="periodEnd = $event"
+      />
     </div>
 
-    <!-- Step 1: PA Invoice -->
-    <form v-else-if="step === 1" @submit.prevent="handleGeneratePA" class="space-y-5">
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
-        <h2 class="font-semibold text-gray-800 text-lg border-b pb-3">PA Invoice</h2>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="label">Invoice Number</label>
-            <input v-model="paInvoiceNumber" type="text" class="input" placeholder="INV-00038" />
-          </div>
-          <div>
-            <label class="label">Invoice Date</label>
-            <input v-model="paInvoiceDate" type="text" class="input" placeholder="DD.MM.YYYY" />
-          </div>
+    <!-- Two-column grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- PA Card -->
+      <div class="bg-card border border-border rounded-xl shadow-sm p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-border pb-3">
+          <h2 class="font-semibold text-foreground text-lg">PA Invoice</h2>
+          <span v-if="paStatus === 'done'" class="text-xs px-2 py-0.5 rounded-full bg-green-900/50 text-green-300 font-medium">Generated</span>
+          <span v-else-if="paStatus === 'error'" class="text-xs px-2 py-0.5 rounded-full bg-destructive/20 text-destructive font-medium">Failed</span>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="label">Period Start</label>
-            <input v-model="periodStart" type="text" class="input" placeholder="DD.MM.YYYY" />
+            <label class="block text-xs font-medium text-muted-foreground mb-1">Invoice Number</label>
+            <input
+              v-model="paInvoiceNumber"
+              v-maska="'INV-#####'"
+              type="text"
+              :disabled="paStatus === 'done'"
+              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+            />
           </div>
           <div>
-            <label class="label">Period End</label>
-            <input v-model="periodEnd" type="text" class="input" placeholder="DD.MM.YYYY" />
+            <label class="block text-xs font-medium text-muted-foreground mb-1">Invoice Date</label>
+            <DatePicker v-model="paInvoiceDate" :disabled="paStatus === 'done'" />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="label">Hours</label>
-            <input v-model.number="paHours" type="number" step="0.5" min="0" class="input" />
+            <label class="block text-xs font-medium text-muted-foreground mb-1">Hours</label>
+            <input
+              v-model.number="paHours"
+              type="number"
+              step="0.5"
+              min="0"
+              :disabled="paStatus === 'done'"
+              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+            />
           </div>
           <div>
-            <label class="label">Rate (€/hr)</label>
-            <input v-model.number="paRate" type="number" step="0.01" min="0" class="input" />
+            <label class="block text-xs font-medium text-muted-foreground mb-1">Rate (€/hr)</label>
+            <input
+              v-model.number="paRate"
+              type="number"
+              step="0.01"
+              min="0"
+              :disabled="paStatus === 'done'"
+              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+            />
           </div>
         </div>
 
-      </div>
-
-      <!-- Computed totals -->
-      <div class="bg-gray-50 rounded-xl border border-gray-200 p-4 space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-500">Line Amount</span>
-          <span class="font-mono font-medium">{{ fmtTable(paLineAmount) }}</span>
+        <div class="bg-muted/50 rounded-lg border border-border p-4 space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Line Amount</span>
+            <span class="font-mono font-medium text-foreground">{{ fmtTable(paLineAmount) }}</span>
+          </div>
+          <div class="flex justify-between border-t border-border pt-2">
+            <span class="text-foreground font-semibold">Balance Due</span>
+            <span class="font-mono font-semibold text-primary">{{ fmtHeader(paBalanceDue) }}</span>
+          </div>
         </div>
-        <div class="flex justify-between border-t pt-2">
-          <span class="text-gray-700 font-semibold">Balance Due</span>
-          <span class="font-mono font-semibold text-blue-700">{{ fmtHeader(paBalanceDue) }}</span>
+
+        <div v-if="paError" class="text-sm bg-destructive/10 border border-destructive/30 text-destructive rounded-lg px-4 py-3">{{ paError }}</div>
+
+        <button
+          @click="handleGeneratePA"
+          :disabled="paStatus === 'done' || paStatus === 'generating'"
+          class="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 transition"
+        >{{ paStatus === 'done' ? 'Generated ✓' : paStatus === 'generating' ? 'Generating...' : 'Generate PA PDF' }}</button>
+      </div>
+
+      <!-- OM Card -->
+      <div class="bg-card border border-border rounded-xl shadow-sm p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-border pb-3">
+          <h2 class="font-semibold text-foreground text-lg">OM Invoice</h2>
+          <span v-if="omStatus === 'done'" class="text-xs px-2 py-0.5 rounded-full bg-green-900/50 text-green-300 font-medium">Generated</span>
+          <span v-else-if="omStatus === 'error'" class="text-xs px-2 py-0.5 rounded-full bg-destructive/20 text-destructive font-medium">Failed</span>
         </div>
-      </div>
 
-      <div v-if="errorMsg" class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-        {{ errorMsg }}
-      </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-muted-foreground mb-1">Invoice Number</label>
+            <input
+              v-model="omInvoiceNumber"
+              v-maska="'INV-#####'"
+              type="text"
+              :disabled="omStatus === 'done'"
+              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-muted-foreground mb-1">Invoice Date</label>
+            <DatePicker v-model="omInvoiceDate" :disabled="omStatus === 'done'" />
+          </div>
+        </div>
 
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-muted-foreground mb-1">Hours <span class="text-xs opacity-60">(total − PA)</span></label>
+            <input
+              :value="omHours"
+              readonly
+              class="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-muted-foreground mb-1">Rate (€/hr)</label>
+            <input
+              v-model.number="omRate"
+              type="number"
+              step="0.01"
+              min="0"
+              :disabled="omStatus === 'done'"
+              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+            />
+          </div>
+        </div>
+
+        <div class="bg-muted/50 rounded-lg border border-border p-4 space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Line Amount</span>
+            <span class="font-mono font-medium text-foreground">{{ fmtTable(omLineAmount) }}</span>
+          </div>
+          <div class="flex justify-between border-t border-border pt-2">
+            <span class="text-foreground font-semibold">Balance Due</span>
+            <span class="font-mono font-semibold text-primary">{{ fmtHeader(omBalanceDue) }}</span>
+          </div>
+        </div>
+
+        <div v-if="omError" class="text-sm bg-destructive/10 border border-destructive/30 text-destructive rounded-lg px-4 py-3">{{ omError }}</div>
+
+        <button
+          @click="handleGenerateOM"
+          :disabled="omStatus === 'done' || omStatus === 'generating'"
+          class="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 transition"
+        >{{ omStatus === 'done' ? 'Generated ✓' : omStatus === 'generating' ? 'Generating...' : 'Generate OM PDF' }}</button>
+      </div>
+    </div>
+
+    <!-- Generate All -->
+    <div class="flex justify-center">
       <button
-        type="submit"
-        :disabled="loading"
-        class="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 transition"
-      >
-        {{ loading ? 'Generating...' : 'Generate PA PDF' }}
-      </button>
-    </form>
-
-    <!-- Step 2: OM Invoice -->
-    <form v-else-if="step === 2" @submit.prevent="handleGenerateOM" class="space-y-5">
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
-        <h2 class="font-semibold text-gray-800 text-lg border-b pb-3">OM Invoice</h2>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="label">Invoice Number</label>
-            <input v-model="omInvoiceNumber" type="text" class="input" />
-          </div>
-          <div>
-            <label class="label">Invoice Date</label>
-            <input v-model="omInvoiceDate" type="text" class="input" placeholder="DD.MM.YYYY" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="label">Period Start</label>
-            <input :value="periodStart" readonly class="input bg-gray-50 text-gray-500" />
-          </div>
-          <div>
-            <label class="label">Period End</label>
-            <input :value="periodEnd" readonly class="input bg-gray-50 text-gray-500" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="label">Hours <span class="text-xs text-gray-400">(total − PA)</span></label>
-            <input :value="omHours" readonly class="input bg-gray-50 text-gray-500" />
-          </div>
-          <div>
-            <label class="label">Rate (€/hr)</label>
-            <input v-model.number="omRate" type="number" step="0.01" min="0" class="input" />
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Computed totals -->
-      <div class="bg-gray-50 rounded-xl border border-gray-200 p-4 space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-500">Line Amount</span>
-          <span class="font-mono font-medium">{{ fmtTable(omLineAmount) }}</span>
-        </div>
-        <div class="flex justify-between border-t pt-2">
-          <span class="text-gray-700 font-semibold">Balance Due</span>
-          <span class="font-mono font-semibold text-blue-700">{{ fmtHeader(omBalanceDue) }}</span>
-        </div>
-      </div>
-
-      <div v-if="errorMsg" class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-        {{ errorMsg }}
-      </div>
-
-      <div class="flex gap-3">
-        <button
-          type="button"
-          @click="step = 1"
-          class="px-4 py-3 border border-gray-300 rounded-xl text-sm hover:bg-gray-50"
-        >
-          &larr; Back
-        </button>
-        <button
-          type="submit"
-          :disabled="loading"
-          class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 transition"
-        >
-          {{ loading ? 'Generating...' : 'Generate OM PDF' }}
-        </button>
-      </div>
-    </form>
+        @click="handleGenerateAll"
+        :disabled="(paStatus === 'done' && omStatus === 'done') || paStatus === 'generating' || omStatus === 'generating'"
+        class="px-8 py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 transition"
+      >{{ (paStatus === 'done' && omStatus === 'done') ? 'All Generated ✓' : 'Generate All Invoices' }}</button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select'
 import { useInvoiceSession } from '~/composables/useInvoiceSession'
 
 const {
-  monthLabel, periodStart, periodEnd,
+  selectedMonth, totalHours, weekdays, periodStart, periodEnd, monthLabel,
   paInvoiceNumber, paInvoiceDate, paHours, paRate,
+  paStatus, paError,
   paLineAmount, paBalanceDue,
   omInvoiceNumber, omInvoiceDate, omHours, omRate,
+  omStatus, omError,
   omLineAmount, omBalanceDue,
   fmtHeader, fmtTable,
-  loadDefaults, generatePA, generateOM,
+  loadDefaults, loadMonth, generatePA, generateOM,
 } = useInvoiceSession()
 
-const step = ref(1)
-const loading = ref(false)
-const errorMsg = ref('')
-const done = ref(false)
-
 onMounted(loadDefaults)
+
+const monthOptions = computed(() => {
+  const now = new Date()
+  const opts = []
+  for (let i = -6; i <= 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+    opts.push({ value, label })
+  }
+  return opts
+})
 
 function triggerDownload(downloadUrl: string, filename: string) {
   const a = document.createElement('a')
@@ -222,46 +231,39 @@ function triggerDownload(downloadUrl: string, filename: string) {
 }
 
 async function handleGeneratePA() {
-  loading.value = true
-  errorMsg.value = ''
   try {
     const result = await generatePA()
     triggerDownload(result.downloadUrl, result.filename)
-    step.value = 2
-  } catch (e: any) {
-    errorMsg.value = e?.data?.message || e?.message || 'Failed to generate invoice'
-  } finally {
-    loading.value = false
+  } catch {
+    // error state set in composable
   }
 }
 
 async function handleGenerateOM() {
-  loading.value = true
-  errorMsg.value = ''
   try {
     const result = await generateOM()
     triggerDownload(result.downloadUrl, result.filename)
-    done.value = true
-  } catch (e: any) {
-    errorMsg.value = e?.data?.message || e?.message || 'Failed to generate invoice'
-  } finally {
-    loading.value = false
+  } catch {
+    // error state set in composable
   }
 }
 
-async function restart() {
-  done.value = false
-  step.value = 1
-  errorMsg.value = ''
-  await loadDefaults()
+async function handleGenerateAll() {
+  // Generate in parallel, but download sequentially — browsers block simultaneous programmatic downloads
+  const paNeeded = paStatus.value !== 'done'
+  const omNeeded = omStatus.value !== 'done'
+
+  const [paResult, omResult] = await Promise.allSettled([
+    paNeeded ? generatePA() : Promise.resolve(null),
+    omNeeded ? generateOM() : Promise.resolve(null),
+  ])
+
+  if (paResult.status === 'fulfilled' && paResult.value) {
+    triggerDownload(paResult.value.downloadUrl, paResult.value.filename)
+  }
+  if (omResult.status === 'fulfilled' && omResult.value) {
+    await new Promise(r => setTimeout(r, 300))
+    triggerDownload(omResult.value.downloadUrl, omResult.value.filename)
+  }
 }
 </script>
-
-<style scoped>
-.label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
-}
-.input {
-  @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500;
-}
-</style>
