@@ -1,60 +1,58 @@
 <template>
-  <div class="max-w-5xl mx-auto py-10 px-4">
-    <div class="flex items-center justify-between mb-6">
-      <NuxtLink to="/invoice" class="text-sm text-blue-600 hover:underline">&larr; Back to Invoice Form</NuxtLink>
-    </div>
-
-    <h1 class="text-2xl font-bold text-foreground mb-6">Invoice History</h1>
+  <div>
+    <p class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-4">Invoice History</p>
 
     <!-- Empty state -->
-    <div v-if="invoices.length === 0" class="text-center py-20 text-muted-foreground">
-      <p class="text-lg">No invoices yet.</p>
-      <p class="text-sm mt-1">
+    <div v-if="invoices.length === 0" class="text-center py-16 text-muted-foreground">
+      <p class="text-sm">No invoices yet.</p>
+      <p class="text-xs mt-1">
         <NuxtLink to="/invoice" class="text-primary hover:underline">Generate your first invoice.</NuxtLink>
       </p>
     </div>
 
     <!-- Table -->
-    <div v-else class="overflow-x-auto rounded-xl border border-border shadow-sm">
-      <table class="w-full text-sm text-left">
-        <thead class="bg-muted text-muted-foreground uppercase text-xs tracking-wide">
+    <div v-else class="overflow-x-auto rounded-lg border border-border">
+      <table class="w-full text-xs text-left">
+        <thead class="bg-muted text-muted-foreground">
           <tr>
-            <th class="px-4 py-3">#</th>
-            <th class="px-4 py-3">Invoice #</th>
-            <th class="px-4 py-3">Template</th>
-            <th class="px-4 py-3">Date</th>
-            <th class="px-4 py-3">Period</th>
-            <th class="px-4 py-3 text-right">Hours</th>
-            <th class="px-4 py-3 text-right">Total</th>
-            <th class="px-4 py-3 text-center">Actions</th>
+            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">#</th>
+            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">Invoice #</th>
+            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">Template</th>
+            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">Date</th>
+            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">Period</th>
+            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium text-right">Hours</th>
+            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium text-right">Total</th>
+            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium text-center">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-border bg-card">
           <tr v-for="(inv, i) in invoices" :key="inv.id" class="hover:bg-muted/50 transition-colors">
-            <td class="px-4 py-3 text-muted-foreground">{{ i + 1 }}</td>
-            <td class="px-4 py-3 font-mono font-medium text-foreground">{{ inv.invoiceNumber }}</td>
-            <td class="px-4 py-3">
+            <td class="px-4 py-2 text-muted-foreground">{{ i + 1 }}</td>
+            <td class="px-4 py-2 font-mono font-medium text-foreground">{{ inv.invoiceNumber }}</td>
+            <td class="px-4 py-2">
               <span
                 :class="[
-                  'inline-block px-2 py-0.5 rounded text-xs font-semibold',
-                  inv.template === 'PA' ? 'bg-purple-900/50 text-purple-300' : 'bg-blue-900/50 text-blue-300',
+                  'inline-block text-[10px] px-1.5 py-0.5 rounded-sm font-medium border',
+                  inv.template === 'PA'
+                    ? 'bg-violet-950/60 text-violet-300 border-violet-800/30'
+                    : 'bg-blue-950/60 text-blue-300 border-blue-800/30',
                 ]"
               >{{ inv.template }}</span>
             </td>
-            <td class="px-4 py-3 text-muted-foreground">{{ inv.invoiceDate }}</td>
-            <td class="px-4 py-3 text-muted-foreground whitespace-nowrap">{{ inv.periodStart }} – {{ inv.periodEnd }}</td>
-            <td class="px-4 py-3 text-right font-mono text-foreground">{{ inv.hours }}</td>
-            <td class="px-4 py-3 text-right font-mono font-semibold text-foreground">{{ formatTotal(inv) }}</td>
-            <td class="px-4 py-3 text-center">
+            <td class="px-4 py-2 text-muted-foreground">{{ inv.invoiceDate }}</td>
+            <td class="px-4 py-2 font-mono text-muted-foreground whitespace-nowrap">{{ inv.periodStart }} – {{ inv.periodEnd }}</td>
+            <td class="px-4 py-2 text-right font-mono text-foreground">{{ inv.hours }}</td>
+            <td class="px-4 py-2 text-right font-mono font-medium text-foreground">{{ formatTotal(inv) }}</td>
+            <td class="px-4 py-2 text-center">
               <div class="flex items-center justify-center gap-2">
                 <a
                   :href="`/api/invoices/${inv.id}/download`"
                   download
-                  class="px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
+                  class="text-[11px] px-2 py-1 rounded-sm text-primary hover:bg-accent transition"
                 >Download</a>
                 <button
                   @click="confirmDelete(inv)"
-                  class="px-3 py-1.5 text-xs bg-card border border-destructive text-destructive rounded-lg hover:bg-destructive/10 transition"
+                  class="text-[11px] px-2 py-1 rounded-sm border border-destructive/50 text-destructive hover:bg-destructive/10 transition"
                 >Delete</button>
               </div>
             </td>
@@ -69,21 +67,21 @@
       class="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
       @click.self="deleteTarget = null"
     >
-      <div class="bg-card border border-border rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
-        <h2 class="text-lg font-semibold text-foreground mb-2">Delete Invoice?</h2>
-        <p class="text-sm text-muted-foreground mb-6">
-          This will permanently delete invoice <strong>{{ deleteTarget.invoiceNumber }}</strong> and its PDF file.
+      <div class="bg-card border border-border rounded-lg p-5 max-w-sm w-full mx-4">
+        <h2 class="text-sm font-semibold text-foreground mb-1.5">Delete Invoice?</h2>
+        <p class="text-xs text-muted-foreground mb-5">
+          This will permanently delete invoice <strong class="text-foreground font-medium">{{ deleteTarget.invoiceNumber }}</strong> and its PDF file.
           This cannot be undone.
         </p>
-        <div class="flex gap-3 justify-end">
+        <div class="flex gap-2 justify-end">
           <button
             @click="deleteTarget = null"
-            class="px-4 py-2 text-sm border border-border rounded-lg hover:bg-muted transition"
+            class="px-3 py-1.5 text-xs border border-border rounded-sm hover:bg-muted transition"
           >Cancel</button>
           <button
             @click="doDelete"
             :disabled="deleting"
-            class="px-4 py-2 text-sm bg-destructive text-destructive-foreground rounded-lg hover:opacity-90 disabled:opacity-50 transition"
+            class="px-3 py-1.5 text-xs bg-destructive text-destructive-foreground rounded-sm hover:opacity-90 disabled:opacity-50 transition"
           >{{ deleting ? 'Deleting…' : 'Delete' }}</button>
         </div>
       </div>

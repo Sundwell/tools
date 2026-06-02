@@ -36,7 +36,7 @@ function onSelect(v: DateValue) {
       <button
         type="button"
         :disabled="disabled"
-        class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground text-left focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+        class="w-full rounded-lg border border-border bg-input px-2.5 py-1.5 text-sm text-foreground text-left focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
       >
         {{ modelValue || 'DD.MM.YYYY' }}
       </button>

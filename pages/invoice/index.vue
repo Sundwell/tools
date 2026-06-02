@@ -1,16 +1,8 @@
 <template>
-  <div class="max-w-[1200px] mx-auto py-10 px-4">
-    <!-- Nav -->
-    <div class="flex items-center justify-between mb-6">
-      <NuxtLink to="/" class="text-sm text-muted-foreground hover:text-foreground">&larr; Back to Tools</NuxtLink>
-      <NuxtLink to="/invoice/history" class="text-sm text-muted-foreground hover:text-foreground">Invoice History &rarr;</NuxtLink>
-    </div>
-
-    <h1 class="text-2xl font-bold text-foreground mb-6">New Monthly Invoices</h1>
-
-    <!-- Month selector + stats -->
-    <div class="flex flex-wrap items-center gap-4 mb-4">
-      <div class="w-52">
+  <div>
+    <!-- Workspace bar -->
+    <div class="flex flex-wrap items-center gap-5 mb-5 pb-4 border-b border-border">
+      <div class="w-44">
         <Select :model-value="selectedMonth" @update:model-value="loadMonth">
           <SelectTrigger>
             <SelectValue placeholder="Select month" />
@@ -22,168 +14,164 @@
           </SelectContent>
         </Select>
       </div>
-      <span v-if="weekdays" class="text-sm text-muted-foreground">
-        {{ weekdays }} weekdays · {{ totalHours }} hrs
+      <span v-if="weekdays" class="text-xs text-muted-foreground">
+        {{ weekdays }} days · {{ totalHours }} h
       </span>
-    </div>
-
-    <!-- Shared billing period (read-only, driven by month selector) -->
-    <div class="mb-6 max-w-xs">
-      <label class="block text-xs font-medium text-muted-foreground mb-1">Billing Period</label>
-      <div class="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-        {{ periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : '—' }}
-      </div>
+      <span v-if="periodStart && periodEnd" class="text-xs font-mono text-muted-foreground">
+        {{ periodStart }} – {{ periodEnd }}
+      </span>
+      <span v-else class="text-xs font-mono text-muted-foreground">—</span>
     </div>
 
     <!-- Two-column grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
       <!-- PA Card -->
-      <div class="bg-card border border-border rounded-xl shadow-sm p-6 space-y-4">
+      <div class="bg-card border border-border rounded-lg p-4 space-y-3">
         <div class="flex items-center justify-between border-b border-border pb-3">
-          <h2 class="font-semibold text-foreground text-lg">PA Invoice</h2>
-          <span v-if="paStatus === 'done'" class="text-xs px-2 py-0.5 rounded-full bg-green-900/50 text-green-300 font-medium">Generated</span>
-          <span v-else-if="paStatus === 'error'" class="text-xs px-2 py-0.5 rounded-full bg-destructive/20 text-destructive font-medium">Failed</span>
+          <h2 class="text-sm font-medium text-foreground">PA Invoice</h2>
+          <span v-if="paStatus === 'done'" class="text-[10px] px-1.5 py-0.5 rounded-sm bg-green-900/50 text-green-300 font-medium">Generated</span>
+          <span v-else-if="paStatus === 'error'" class="text-[10px] px-1.5 py-0.5 rounded-sm bg-destructive/20 text-destructive font-medium">Failed</span>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-muted-foreground mb-1">Invoice Number</label>
+            <label class="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-1">Invoice Number</label>
             <input
               v-model="paInvoiceNumber"
               v-maska="'INV-#####'"
               type="text"
               :disabled="paStatus === 'done'"
-              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+              class="w-full rounded-lg border border-border bg-input px-2.5 py-1.5 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-muted-foreground mb-1">Invoice Date</label>
+            <label class="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-1">Invoice Date</label>
             <DatePicker v-model="paInvoiceDate" :disabled="paStatus === 'done'" />
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-muted-foreground mb-1">Hours</label>
+            <label class="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-1">Hours</label>
             <input
               v-model.number="paHours"
               type="number"
               step="0.5"
               min="0"
               :disabled="paStatus === 'done'"
-              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+              class="w-full rounded-lg border border-border bg-input px-2.5 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-muted-foreground mb-1">Rate (€/hr)</label>
+            <label class="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-1">Rate (€/hr)</label>
             <input
               v-model.number="paRate"
               type="number"
               step="0.01"
               min="0"
               :disabled="paStatus === 'done'"
-              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+              class="w-full rounded-lg border border-border bg-input px-2.5 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
             />
           </div>
         </div>
 
-        <div class="bg-muted/50 rounded-lg border border-border p-4 space-y-2 text-sm">
+        <div class="bg-background/60 border border-border rounded-lg p-3 space-y-2 text-sm">
           <div class="flex justify-between">
             <span class="text-muted-foreground">Line Amount</span>
             <span class="font-mono font-medium text-foreground">{{ fmtTable(paLineAmount) }}</span>
           </div>
           <div class="flex justify-between border-t border-border pt-2">
-            <span class="text-foreground font-semibold">Balance Due</span>
+            <span class="text-foreground font-medium">Balance Due</span>
             <span class="font-mono font-semibold text-primary">{{ fmtHeader(paBalanceDue) }}</span>
           </div>
         </div>
 
-        <div v-if="paError" class="text-sm bg-destructive/10 border border-destructive/30 text-destructive rounded-lg px-4 py-3">{{ paError }}</div>
+        <div v-if="paError" class="text-sm bg-destructive/10 border border-destructive/30 text-destructive rounded-lg px-3 py-2">{{ paError }}</div>
 
         <button
           @click="handleGeneratePA"
           :disabled="paStatus === 'done' || paStatus === 'generating'"
-          class="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 transition"
+          class="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition"
         >{{ paStatus === 'done' ? 'Generated ✓' : paStatus === 'generating' ? 'Generating...' : 'Generate PA PDF' }}</button>
       </div>
 
       <!-- OM Card -->
-      <div class="bg-card border border-border rounded-xl shadow-sm p-6 space-y-4">
+      <div class="bg-card border border-border rounded-lg p-4 space-y-3">
         <div class="flex items-center justify-between border-b border-border pb-3">
-          <h2 class="font-semibold text-foreground text-lg">OM Invoice</h2>
-          <span v-if="omStatus === 'done'" class="text-xs px-2 py-0.5 rounded-full bg-green-900/50 text-green-300 font-medium">Generated</span>
-          <span v-else-if="omStatus === 'error'" class="text-xs px-2 py-0.5 rounded-full bg-destructive/20 text-destructive font-medium">Failed</span>
+          <h2 class="text-sm font-medium text-foreground">OM Invoice</h2>
+          <span v-if="omStatus === 'done'" class="text-[10px] px-1.5 py-0.5 rounded-sm bg-green-900/50 text-green-300 font-medium">Generated</span>
+          <span v-else-if="omStatus === 'error'" class="text-[10px] px-1.5 py-0.5 rounded-sm bg-destructive/20 text-destructive font-medium">Failed</span>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-muted-foreground mb-1">Invoice Number</label>
+            <label class="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-1">Invoice Number</label>
             <input
               v-model="omInvoiceNumber"
               v-maska="'INV-#####'"
               type="text"
               :disabled="omStatus === 'done'"
-              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+              class="w-full rounded-lg border border-border bg-input px-2.5 py-1.5 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-muted-foreground mb-1">Invoice Date</label>
+            <label class="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-1">Invoice Date</label>
             <DatePicker v-model="omInvoiceDate" :disabled="omStatus === 'done'" />
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-muted-foreground mb-1">Hours</label>
+            <label class="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-1">Hours</label>
             <input
               v-model.number="omHours"
               type="number"
               step="0.5"
               min="0"
               :disabled="omStatus === 'done'"
-              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+              class="w-full rounded-lg border border-border bg-input px-2.5 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-muted-foreground mb-1">Rate (€/hr)</label>
+            <label class="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-1">Rate (€/hr)</label>
             <input
               v-model.number="omRate"
               type="number"
               step="0.01"
               min="0"
               :disabled="omStatus === 'done'"
-              class="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+              class="w-full rounded-lg border border-border bg-input px-2.5 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
             />
           </div>
         </div>
 
-        <div class="bg-muted/50 rounded-lg border border-border p-4 space-y-2 text-sm">
+        <div class="bg-background/60 border border-border rounded-lg p-3 space-y-2 text-sm">
           <div class="flex justify-between">
             <span class="text-muted-foreground">Line Amount</span>
             <span class="font-mono font-medium text-foreground">{{ fmtTable(omLineAmount) }}</span>
           </div>
           <div class="flex justify-between border-t border-border pt-2">
-            <span class="text-foreground font-semibold">Balance Due</span>
+            <span class="text-foreground font-medium">Balance Due</span>
             <span class="font-mono font-semibold text-primary">{{ fmtHeader(omBalanceDue) }}</span>
           </div>
         </div>
 
-        <div v-if="omError" class="text-sm bg-destructive/10 border border-destructive/30 text-destructive rounded-lg px-4 py-3">{{ omError }}</div>
+        <div v-if="omError" class="text-sm bg-destructive/10 border border-destructive/30 text-destructive rounded-lg px-3 py-2">{{ omError }}</div>
 
         <button
           @click="handleGenerateOM"
           :disabled="omStatus === 'done' || omStatus === 'generating'"
-          class="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 transition"
+          class="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition"
         >{{ omStatus === 'done' ? 'Generated ✓' : omStatus === 'generating' ? 'Generating...' : 'Generate OM PDF' }}</button>
       </div>
     </div>
 
     <!-- Generate All -->
-    <div class="flex justify-center">
+    <div class="flex justify-center mt-2">
       <button
         @click="handleGenerateAll"
         :disabled="(paStatus === 'done' && omStatus === 'done') || paStatus === 'generating' || omStatus === 'generating'"
-        class="px-8 py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 transition"
+        class="px-6 py-2.5 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition"
       >{{ (paStatus === 'done' && omStatus === 'done') ? 'All Generated ✓' : 'Generate All Invoices' }}</button>
     </div>
   </div>
