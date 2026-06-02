@@ -17,24 +17,24 @@
 
     <!-- Table -->
     <div v-else class="overflow-x-auto rounded-lg border border-border">
-      <table class="w-full text-xs text-left">
+      <table class="w-full text-sm text-left">
         <thead class="text-muted-foreground" style="background: oklch(0.200 0.007 264)">
           <tr>
-            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">#</th>
-            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">Invoice #</th>
-            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">Template</th>
-            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">Date</th>
-            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">Period</th>
-            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium text-right">Hours</th>
-            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium text-right">Total</th>
-            <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium text-center">Actions</th>
+            <th class="px-4 py-2 text-xs uppercase tracking-widest font-medium">#</th>
+            <th class="px-4 py-2 text-xs uppercase tracking-widest font-medium">Invoice #</th>
+            <th class="px-4 py-2 text-xs uppercase tracking-widest font-medium">Template</th>
+            <th class="px-4 py-2 text-xs uppercase tracking-widest font-medium">Date</th>
+            <th class="px-4 py-2 text-xs uppercase tracking-widest font-medium">Period</th>
+            <th class="px-4 py-2 text-xs uppercase tracking-widest font-medium text-right">Hours</th>
+            <th class="px-4 py-2 text-xs uppercase tracking-widest font-medium text-right">Total</th>
+            <th class="px-4 py-2 text-xs uppercase tracking-widest font-medium text-center">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-border bg-card">
           <tr v-for="(inv, i) in invoices" :key="inv.id" class="hover:bg-[#26262b] transition-colors">
-            <td class="px-4 py-2 text-muted-foreground">{{ i + 1 }}</td>
-            <td class="px-4 py-2 font-mono font-medium text-foreground">{{ inv.invoiceNumber }}</td>
-            <td class="px-4 py-2">
+            <td class="px-4 py-2.5 text-muted-foreground">{{ i + 1 }}</td>
+            <td class="px-4 py-2.5 font-mono font-medium text-foreground">{{ inv.invoiceNumber }}</td>
+            <td class="px-4 py-2.5">
               <span
                 :class="[
                   'inline-block text-[10px] px-1.5 py-0.5 rounded-sm font-medium border',
@@ -44,20 +44,20 @@
                 ]"
               >{{ inv.template }}</span>
             </td>
-            <td class="px-4 py-2 text-muted-foreground">{{ inv.invoiceDate }}</td>
-            <td class="px-4 py-2 font-mono text-muted-foreground whitespace-nowrap">{{ inv.periodStart }} – {{ inv.periodEnd }}</td>
-            <td class="px-4 py-2 text-right font-mono text-foreground">{{ inv.hours }}</td>
-            <td class="px-4 py-2 text-right font-mono font-medium text-foreground">{{ formatTotal(inv) }}</td>
-            <td class="px-4 py-2 text-center">
+            <td class="px-4 py-2.5 text-muted-foreground">{{ inv.invoiceDate }}</td>
+            <td class="px-4 py-2.5 font-mono text-muted-foreground whitespace-nowrap">{{ inv.periodStart }} – {{ inv.periodEnd }}</td>
+            <td class="px-4 py-2.5 text-right font-mono text-foreground">{{ inv.hours }}</td>
+            <td class="px-4 py-2.5 text-right font-mono font-medium text-foreground">{{ formatTotal(inv) }}</td>
+            <td class="px-4 py-2.5 text-center">
               <div class="flex items-center justify-center gap-2">
                 <a
                   :href="`/api/invoices/${inv.id}/download`"
                   download
-                  class="text-[11px] px-2 py-1 rounded-sm text-primary hover:bg-accent transition cursor-pointer"
+                  class="text-xs px-2 py-1 rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition cursor-pointer"
                 >Download</a>
                 <button
                   @click="confirmDelete(inv)"
-                  class="text-[11px] px-2 py-1 rounded-sm border border-destructive/50 text-destructive hover:bg-destructive/10 transition cursor-pointer"
+                  class="text-xs px-2 py-1 rounded-sm border border-destructive/50 text-destructive hover:bg-destructive/10 transition cursor-pointer"
                 >Delete</button>
               </div>
             </td>

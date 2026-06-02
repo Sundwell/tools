@@ -3,11 +3,10 @@
     <!-- Page header -->
     <div class="mb-5">
       <h1 class="text-base font-semibold text-foreground">Monthly Invoices</h1>
-      <p class="text-xs text-muted-foreground mt-0.5">{{ selectedMonth ? monthLabel : 'Select a month to get started' }}</p>
     </div>
 
     <!-- Workspace bar -->
-    <div class="bg-card border border-border rounded-md px-4 py-2.5 mb-5 flex flex-wrap items-center gap-5">
+    <div class="bg-card border border-border rounded-md px-4 py-2.5 mb-5 flex flex-wrap items-center gap-4">
       <div class="w-44">
         <Select :model-value="selectedMonth" @update:model-value="loadMonth">
           <SelectTrigger>
@@ -20,12 +19,14 @@
           </SelectContent>
         </Select>
       </div>
+      <div v-if="weekdays" class="h-5 w-px bg-border shrink-0"></div>
       <span v-if="weekdays" class="text-xs text-muted-foreground">
         {{ weekdays }} days · {{ totalHours }} h
       </span>
-      <span v-if="periodStart && periodEnd" class="text-xs font-mono text-muted-foreground">
-        {{ periodStart }} – {{ periodEnd }}
-      </span>
+      <template v-if="periodStart && periodEnd">
+        <div class="h-5 w-px bg-border shrink-0"></div>
+        <span class="text-xs font-mono text-muted-foreground">{{ periodStart }} – {{ periodEnd }}</span>
+      </template>
       <span v-else class="text-xs font-mono text-muted-foreground">—</span>
     </div>
 
@@ -88,7 +89,7 @@
           </div>
           <div class="flex justify-between border-t border-border pt-2">
             <span class="text-foreground font-medium">Balance Due</span>
-            <span class="font-mono font-semibold text-primary">{{ fmtHeader(paBalanceDue) }}</span>
+            <span class="font-mono font-semibold text-foreground">{{ fmtHeader(paBalanceDue) }}</span>
           </div>
         </div>
 
@@ -97,7 +98,7 @@
         <button
           @click="handleGeneratePA"
           :disabled="paStatus === 'done' || paStatus === 'generating'"
-          class="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition cursor-pointer"
+          class="w-full py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition cursor-pointer"
         >{{ paStatus === 'done' ? 'Generated ✓' : paStatus === 'generating' ? 'Generating...' : 'Generate PA PDF' }}</button>
       </div>
 
@@ -158,7 +159,7 @@
           </div>
           <div class="flex justify-between border-t border-border pt-2">
             <span class="text-foreground font-medium">Balance Due</span>
-            <span class="font-mono font-semibold text-primary">{{ fmtHeader(omBalanceDue) }}</span>
+            <span class="font-mono font-semibold text-foreground">{{ fmtHeader(omBalanceDue) }}</span>
           </div>
         </div>
 
@@ -167,7 +168,7 @@
         <button
           @click="handleGenerateOM"
           :disabled="omStatus === 'done' || omStatus === 'generating'"
-          class="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition cursor-pointer"
+          class="w-full py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition cursor-pointer"
         >{{ omStatus === 'done' ? 'Generated ✓' : omStatus === 'generating' ? 'Generating...' : 'Generate OM PDF' }}</button>
       </div>
     </div>
