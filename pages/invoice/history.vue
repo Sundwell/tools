@@ -1,6 +1,11 @@
 <template>
   <div>
-    <p class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-4">Invoice History</p>
+    <div class="mb-5 flex items-end justify-between">
+      <div>
+        <h1 class="text-base font-semibold text-foreground">Invoice History</h1>
+        <p class="text-xs text-muted-foreground mt-0.5">{{ invoices.length }} invoice{{ invoices.length !== 1 ? 's' : '' }}</p>
+      </div>
+    </div>
 
     <!-- Empty state -->
     <div v-if="invoices.length === 0" class="text-center py-16 text-muted-foreground">
@@ -13,7 +18,7 @@
     <!-- Table -->
     <div v-else class="overflow-x-auto rounded-lg border border-border">
       <table class="w-full text-xs text-left">
-        <thead class="bg-muted text-muted-foreground">
+        <thead class="text-muted-foreground" style="background: oklch(0.200 0.007 264)">
           <tr>
             <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">#</th>
             <th class="px-4 py-2 text-[10px] uppercase tracking-widest font-medium">Invoice #</th>
@@ -26,7 +31,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-border bg-card">
-          <tr v-for="(inv, i) in invoices" :key="inv.id" class="hover:bg-muted/50 transition-colors">
+          <tr v-for="(inv, i) in invoices" :key="inv.id" class="hover:bg-[#26262b] transition-colors">
             <td class="px-4 py-2 text-muted-foreground">{{ i + 1 }}</td>
             <td class="px-4 py-2 font-mono font-medium text-foreground">{{ inv.invoiceNumber }}</td>
             <td class="px-4 py-2">
@@ -48,11 +53,11 @@
                 <a
                   :href="`/api/invoices/${inv.id}/download`"
                   download
-                  class="text-[11px] px-2 py-1 rounded-sm text-primary hover:bg-accent transition"
+                  class="text-[11px] px-2 py-1 rounded-sm text-primary hover:bg-accent transition cursor-pointer"
                 >Download</a>
                 <button
                   @click="confirmDelete(inv)"
-                  class="text-[11px] px-2 py-1 rounded-sm border border-destructive/50 text-destructive hover:bg-destructive/10 transition"
+                  class="text-[11px] px-2 py-1 rounded-sm border border-destructive/50 text-destructive hover:bg-destructive/10 transition cursor-pointer"
                 >Delete</button>
               </div>
             </td>
@@ -76,12 +81,12 @@
         <div class="flex gap-2 justify-end">
           <button
             @click="deleteTarget = null"
-            class="px-3 py-1.5 text-xs border border-border rounded-sm hover:bg-muted transition"
+            class="px-3 py-1.5 text-xs border border-border rounded-sm hover:bg-muted transition cursor-pointer"
           >Cancel</button>
           <button
             @click="doDelete"
             :disabled="deleting"
-            class="px-3 py-1.5 text-xs bg-destructive text-destructive-foreground rounded-sm hover:opacity-90 disabled:opacity-50 transition"
+            class="px-3 py-1.5 text-xs bg-destructive text-destructive-foreground rounded-sm hover:opacity-90 disabled:opacity-50 transition cursor-pointer"
           >{{ deleting ? 'Deleting…' : 'Delete' }}</button>
         </div>
       </div>

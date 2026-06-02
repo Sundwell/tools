@@ -1,7 +1,13 @@
 <template>
   <div>
+    <!-- Page header -->
+    <div class="mb-5">
+      <h1 class="text-base font-semibold text-foreground">Monthly Invoices</h1>
+      <p class="text-xs text-muted-foreground mt-0.5">{{ selectedMonth ? monthLabel : 'Select a month to get started' }}</p>
+    </div>
+
     <!-- Workspace bar -->
-    <div class="flex flex-wrap items-center gap-5 mb-5 pb-4 border-b border-border">
+    <div class="bg-card border border-border rounded-md px-4 py-2.5 mb-5 flex flex-wrap items-center gap-5">
       <div class="w-44">
         <Select :model-value="selectedMonth" @update:model-value="loadMonth">
           <SelectTrigger>
@@ -91,7 +97,7 @@
         <button
           @click="handleGeneratePA"
           :disabled="paStatus === 'done' || paStatus === 'generating'"
-          class="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition"
+          class="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition cursor-pointer"
         >{{ paStatus === 'done' ? 'Generated ✓' : paStatus === 'generating' ? 'Generating...' : 'Generate PA PDF' }}</button>
       </div>
 
@@ -161,17 +167,17 @@
         <button
           @click="handleGenerateOM"
           :disabled="omStatus === 'done' || omStatus === 'generating'"
-          class="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition"
+          class="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition cursor-pointer"
         >{{ omStatus === 'done' ? 'Generated ✓' : omStatus === 'generating' ? 'Generating...' : 'Generate OM PDF' }}</button>
       </div>
     </div>
 
     <!-- Generate All -->
-    <div class="flex justify-center mt-2">
+    <div class="flex items-center justify-end pt-3 mt-1 border-t border-border">
       <button
         @click="handleGenerateAll"
         :disabled="(paStatus === 'done' && omStatus === 'done') || paStatus === 'generating' || omStatus === 'generating'"
-        class="px-6 py-2.5 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition"
+        class="px-6 py-2.5 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition cursor-pointer"
       >{{ (paStatus === 'done' && omStatus === 'done') ? 'All Generated ✓' : 'Generate All Invoices' }}</button>
     </div>
   </div>
